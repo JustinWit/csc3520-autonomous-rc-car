@@ -5,9 +5,17 @@ import pdb
 import json
 import numpy as np
 import cv2
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 def load_data(path):
+    ''' reads in data collected from donkeycar and returns np.array of inputs and outputs
+    parameters
+        path: path to data file from current directory
+
+    returns 
+        img_arr: (n, 120, 160, 3) array of all images in data file
+        out_arr: (n, 2) array where out_arr[n, 0] is throttle and out_arr[n, 1] is steering angle
+    '''
     dpath = os.path.join(ROOT, path)
     mpath = os.path.join(dpath, 'manifest.json')
     f = open(mpath, 'r')
@@ -60,10 +68,9 @@ def load_data(path):
         # print updates
         print(f'{i} finished')
 
-    pdb.set_trace()
     return img_arr, out_arr
 
 
 
 if __name__ == '__main__':
-    load_data('rc-car\\data')
+    load_data('data')
