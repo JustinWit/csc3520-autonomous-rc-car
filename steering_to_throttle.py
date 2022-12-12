@@ -22,7 +22,11 @@ def main(loadamodel=False):
     y_steering_test = y_test[:, 1]
 
     if loadamodel:
-        model_steering = load_model('models\\steering_to_throttle')
+        model_steering = load_model('models\\steering_to_throttle\\steering')
+        model_throttle = load_model('models\\steering_to_throttle\\throttle')
+
+        steering_out_train = model_steering.predict(X_train)
+        steering_out_test = model_steering.predict(X_test)
 
     else:
         # create model for steering
@@ -45,7 +49,7 @@ def main(loadamodel=False):
         model_steering = Model(inputs=[img_in1], outputs=[output1], name='steering_only')
         model_steering.compile(Adam(learning_rate=.001), loss='mse')
         model_steering.summary()
-        input("<Enter> to contiue")
+        # input("<Enter> to contiue")
 
         callbacks = [
                 EarlyStopping(monitor='val_loss',
@@ -63,60 +67,65 @@ def main(loadamodel=False):
             verbose=1,
             callbacks=callbacks)
 
-        model_steering.save('models\\steering_to_throttle')
+        model_steering.save('models\\steering_to_throttle\\steering')
 
-    steering_out_train = model_steering.predict(X_train)
-    steering_out_test = model_steering.predict(X_test)
+        steering_out_train = model_steering.predict(X_train)
+        steering_out_test = model_steering.predict(X_test)
 
-    # create model for throttle
-    img_in2 = (Input(shape=(120, 160, 3)))
-    x2 = Conv2D(filters=24, kernel_size=(5, 5), strides=2, activation='relu', name='conv2d_1')(img_in2)
-    x2 = Conv2D(filters=32, kernel_size=(5, 5), strides=2, activation='relu', name='conv2d_2')(x2)
-    x2 = Conv2D(filters=64, kernel_size=(5, 5), strides=2, activation='relu', name='conv2d_3')(x2)
-    x2 = Conv2D(filters=64, kernel_size=(3, 3), strides=1, activation='relu', name='conv2d_4')(x2)
-    x2 = Conv2D(filters=64, kernel_size=(3, 3), strides=1, activation='relu', name='conv2d_5')(x2)
-    x2 = Flatten(name='flatten')(x2)
-    # add steering values as input
+        # throttle model# create model for throttle
+        img_in2 = (Input(shape=(120, 160, 3)))
+        x2 = Conv2D(filters=24, kernel_size=(5, 5), strides=2, activation='relu', name='conv2d_1')(img_in2)
+        x2 = Conv2D(filters=32, kernel_size=(5, 5), strides=2, activation='relu', name='conv2d_2')(x2)
+        x2 = Conv2D(filters=64, kernel_size=(5, 5), strides=2, activation='relu', name='conv2d_3')(x2)
+        x2 = Conv2D(filters=64, kernel_size=(3, 3), strides=1, activation='relu', name='conv2d_4')(x2)
+        x2 = Conv2D(filters=64, kernel_size=(3, 3), strides=1, activation='relu', name='conv2d_5')(x2)
+        x2 = Flatten(name='flatten')(x2)
+        # add steering values as input
 
-    x2 = Dense(100, activation='relu', name='dense_1')(x2)
-    x2 = Dropout(.2)(x2)
-    x2 = Dense(100, activation='relu', name='dense_2')(x2)
-    x2 = Dropout(.2)(x2)
-    x2 = Dense(50, activation='relu', name='dense_3')(x2)
-    x2 = Dropout(.2)(x2)
-    x2 = Dense(1, activation='linear', name='dense_4')(x2)
+        x2 = Dense(100, activation='relu', name='dense_1')(x2)
+        x2 = Dropout(.2)(x2)
+        x2 = Dense(100, activation='relu', name='dense_2')(x2)
+        x2 = Dropout(.2)(x2)
+        x2 = Dense(50, activation='relu', name='dense_3')(x2)
+        x2 = Dropout(.2)(x2)
+        x2 = Dense(1, activation='linear', name='dense_4')(x2)
+        
+        steer_in = Input(shape=(1, ))
+        z = concatenate([x2, steer_in])
+
+        output2 = Dense(1, activation='linear', name='output_1')(z)
+
+        model_throttle = Model(inputs=[img_in2, steer_in], outputs=[output2], name='gremlin')
+        model_throttle.compile(Adam(learning_rate=.001), loss='mse')
+        model_throttle.summary()
+        # input("<Enter> to contiue")
+
+        callbacks = [
+                    EarlyStopping(monitor='val_loss',
+                                patience=5,
+                                min_delta=0.001,
+                                verbose = 1)]
+
+        throttle = model_throttle.fit(
+            x = [X_train, steering_out_train], 
+            y = y_throttle_train, 
+            steps_per_epoch=50, 
+            batch_size=100, 
+            validation_data=([X_test, steering_out_test], y_throttle_test), 
+            epochs=100, 
+            verbose=1,
+            callbacks=callbacks)
+
+        model_throttle.save('models\\steering_to_throttle\\throttle')
+
+    # results
+    metrics_steering = model_steering.evaluate(X_test, y_steering_test)
+    metrics_throttle = model_throttle.evaluate([X_test, steering_out_test], y_throttle_test)
+    print(f'Steering loss: {metrics_steering:0.2f}')
+    print(f'Throttle loss: {metrics_throttle:0.2f}')
+    print(f'Total loss: {metrics_steering + metrics_throttle:0.2f}')
     
-    steer_in = Input(shape=(1, ))
-    z = concatenate([x2, steer_in])
-    pdb.set_trace()
-
-    output2 = Dense(1, activation='linear', name='output_1')(z)
-
-    model_throttle = Model(inputs=[img_in2, steer_in], outputs=[output2], name='gremlin')
-    model_throttle.compile(Adam(learning_rate=.001), loss='mse')
-    model_throttle.summary()
-    input("<Enter> to contiue")
-
-    callbacks = [
-                EarlyStopping(monitor='val_loss',
-                            patience=5,
-                            min_delta=0.001,
-                            verbose = 1)]
-
-    throttle = model_throttle.fit(
-        x = [X_train, steering_out_train], 
-        y = y_throttle_train, 
-        steps_per_epoch=50, 
-        batch_size=100, 
-        validation_data=([X_test, steering_out_test], y_throttle_test), 
-        epochs=100, 
-        verbose=1,
-        callbacks=callbacks)
-
-
-
-    pdb.set_trace()
 
 
 if __name__ == "__main__":
-    main(True)
+    main(False)
