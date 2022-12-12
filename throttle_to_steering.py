@@ -31,6 +31,8 @@ def main(loadamodel=False):
     if loadamodel:
         model_throttle = load_model('models\\throttle_to_steering\\throttle')
         model_steering = load_model('models\\throttle_to_steering\\steering')
+        throttle_out_train = model_throttle.predict(X_train)
+        throttle_out_test = model_throttle.predict(X_test)
 
     else:
         # create model for steering
@@ -53,7 +55,7 @@ def main(loadamodel=False):
         model_throttle = Model(inputs=[img_in1], outputs=[output1], name='throttle_only')
         model_throttle.compile(Adam(learning_rate=.001), loss='mse')
         model_throttle.summary()
-        input("<Enter> to contiue")
+        input("<Enter> to continue")
 
         throttle = model_throttle.fit(
             x = X_train, 
@@ -67,7 +69,8 @@ def main(loadamodel=False):
 
         model_throttle.save('models\\throttle_to_steering\\throttle')
 
-        throttle_out = model_throttle.predict(X_train)
+        throttle_out_train = model_throttle.predict(X_train)
+        throttle_out_test = model_throttle.predict(X_test)
 
         # create model for throttle
         img_in2 = (Input(shape=(120, 160, 3)))
@@ -97,12 +100,12 @@ def main(loadamodel=False):
         model_steering = Model(inputs=(img_in2, steering_in), outputs=[output2], name='gremlin')
         model_steering.compile(Adam(learning_rate=.001), loss='mse')
         model_steering.summary()
-        input("<Enter> to contiue")
+        input("<Enter> to continue")
 
         
 
         steering = model_steering.fit(
-            x = (X_train, throttle_out),
+            x = (X_train, throttle_out_train),
             y = y_steering_train, 
             steps_per_epoch=50, 
             batch_size=100, 
@@ -115,13 +118,13 @@ def main(loadamodel=False):
 
     
 
-    # evaluate models here
-    # model_throttle
-    # model_steering
+    # results
+    metrics_steering = model_steering.evaluate([X_test, throttle_out_train], y_steering_test)
+    metrics_throttle = model_throttle.evaluate([X_test, throttle_out_test], y_throttle_test)
+    print(f'Steering loss: {metrics_steering:0.2f}')
+    print(f'Throttle loss: {metrics_throttle:0.2f}')
+    print(f'Total loss: {metrics_steering + metrics_throttle:0.2f}')
 
-
-
-    pdb.set_trace()
 
 
 if __name__ == "__main__":
