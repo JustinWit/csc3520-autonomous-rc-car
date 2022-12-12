@@ -91,7 +91,7 @@ def main(loadamodel=False):
 
     output2 = Dense(1, activation='linear', name='output_1')(z)
 
-    model_throttle = Model(inputs=[img_in2], outputs=[output2], name='gremlin')
+    model_throttle = Model(inputs=[img_in2, steering_out], outputs=[output2], name='gremlin')
     model_throttle.compile(Adam(learning_rate=.001), loss='mse')
     model_throttle.summary()
     input("<Enter> to contiue")
