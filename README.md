@@ -11,8 +11,8 @@ Ensure following packages are installed properly:
 * tensorflow
 * scikit-learn
 
-How data is read in
-read_data.py file is used in each network file to read in data from the data/ folder. It loops over the manifest.json file and then loops over the files specified in the manifest.json file to save the images and output values. It returns two arrays, the first is the array of images, the second is a 2d array where the first dimension is the throttle values and the second is the steering angle.
+How data is read in:
+* read_data.py file is used in each network file to read in data from the data/ folder. It loops over the manifest.json file and then loops over the files specified in the manifest.json file to save the images and output values. It returns two arrays, the first is the array of images, the second is a 2d array where the first dimension is the throttle values and the second is the steering angle.
 
 
 Then select one of the following networks to use:
