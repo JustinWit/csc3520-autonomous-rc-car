@@ -111,6 +111,8 @@ def main(loadamodel=False):
             verbose=1,
             callbacks=callbacks)
 
+        model_steering.save('models\\throttle_to_steering\\steering')
+
     
 
     # evaluate models here
