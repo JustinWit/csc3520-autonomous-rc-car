@@ -55,8 +55,10 @@ def main():
 
 
 
-    pdb.set_trace()
-
+    metrics = model.evaluate(X_test, y_test)
+    print(f'Throttle loss: {metrics[1]:0.2}')
+    print(f'Steering loss: {metrics[2]:0.2}')
+    print(f'Total loss: {metrics[0]:0.2}')
 
 if __name__ == "__main__":
     main()
