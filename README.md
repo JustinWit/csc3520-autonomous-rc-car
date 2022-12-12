@@ -17,7 +17,6 @@ Then select one of the following networks to use:
 * steering_to_throttle.py
 * throttle_to_steering.py
 * img_filter_CNN.py
-* img_transformation.py
 
 then run the python file
 ```shell
