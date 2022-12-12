@@ -23,3 +23,4 @@ then run the python file
 ```shell
 python3 <name_of_file>.py
 ```
+The loss will be printed to the screen after the model has finished training
