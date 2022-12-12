@@ -77,8 +77,11 @@ def main():
         callbacks=callbacks)
 
 
-
-    pdb.set_trace()
+    throttle_metrics = model_throttle.evaluate(X_test, y_throttle_test)
+    steering_metrics = model_steer.evaluate(X_test, y_steering_test)
+    print(f'Throttle loss: {throttle_metrics:0.2f}')
+    print(f'Steering loss: {steering_metrics:0.2f}')
+    print(f'Total loss: { throttle_metrics + steering_metrics:0.2f}')
 
 
 if __name__ == "__main__":
