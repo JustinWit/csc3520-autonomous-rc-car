@@ -30,3 +30,6 @@ then run the python file
 python3 <name_of_file>.py
 ```
 The loss will be printed to the screen after the model has finished training
+
+By Default the file will train models.<br>
+If you would like to load models instead add the --loadmodels flag to the end of the python3 command
