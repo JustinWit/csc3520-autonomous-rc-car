@@ -30,7 +30,7 @@ def main(args):
     y_steering_test = y_test[:, 1]
 
     # load trained model from file
-    if args.models:
+    if args.loadmodels:
         model_steering = load_model('models\\steering_to_throttle\\steering')
         model_throttle = load_model('models\\steering_to_throttle\\throttle')
 
